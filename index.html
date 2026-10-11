@@ -1,0 +1,1339 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Adventure World</title>
+  <style>
+   
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 12px;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  color: #294638;
+  background: linear-gradient(180deg, #dff5ff, #fff7d6);
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid #275dad;
+  outline-offset: 3px;
+}
+
+.game {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 22px;
+  border: 4px solid #b7dfaa;
+  border-radius: 28px;
+  background: #fffef7;
+  box-shadow: 0 12px 30px #365d3720;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+h1 {
+  margin: 0;
+  color: #26804b;
+  font-size: clamp(25px, 5vw, 38px);
+}
+
+h2 {
+  margin: 0 0 10px;
+}
+
+.subtitle {
+  margin: 8px 0 18px;
+  color: #66776a;
+}
+
+.star-counter {
+  flex-shrink: 0;
+  padding: 10px 15px;
+  border-radius: 20px;
+  background: #fff0a8;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.map-panel,
+.progress-panel,
+.question,
+.completion-panel,
+.badges-panel {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 20px;
+}
+
+.map-panel {
+  background: #edf8e8;
+}
+
+.map-panel > p,
+.badges-panel > p {
+  margin: 0 0 15px;
+  color: #617468;
+}
+
+.world-map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.world-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 13px 6px;
+  border: 2px solid #b9dcb1;
+  border-radius: 16px;
+  color: #294638;
+  background: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.world-card:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 12px #00000012;
+}
+
+.world-card.active {
+  border-color: #329b58;
+  background: #dff5d8;
+}
+
+.world-card.completed {
+  border-color: #e6b83f;
+  background: #fff5cc;
+}
+
+.world-card.locked {
+  opacity: 0.65;
+  background: #eeeeee;
+  cursor: not-allowed;
+}
+
+.world-icon {
+  font-size: 32px;
+}
+
+.world-card small {
+  color: #617468;
+}
+
+.world-status {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.progress-panel {
+  padding: 15px 18px;
+  background: #f4f0ff;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.progress-track {
+  height: 14px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #ded7ee;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #66c779, #24a65a);
+  transition: width 0.4s ease;
+}
+
+.meadow {
+  position: relative;
+  margin-top: 18px;
+  padding: 15px;
+  overflow: hidden;
+  border: 2px solid #c7e7b4;
+  border-radius: 22px;
+  background: linear-gradient(#dff5ff 0%, #effbdf 72%, #c6eaa8 72%);
+  text-align: center;
+}
+
+.bunny-scene {
+  position: relative;
+  min-height: 145px;
+  padding-top: 5px;
+}
+
+.bunny {
+  display: inline-block;
+  font-size: 78px;
+  line-height: 1.3;
+  transform-origin: center bottom;
+  animation: bunny-breathe 2s ease-in-out infinite;
+}
+
+@keyframes bunny-breathe {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-5px) rotate(-3deg); }
+}
+
+.bunny.hop {
+  animation: bunny-hop 0.65s ease-in-out;
+}
+
+@keyframes bunny-hop {
+  0% { transform: translateY(0) rotate(0) scale(1); }
+  35% { transform: translateY(-65px) rotate(-12deg) scale(1.1); }
+  65% { transform: translateY(-45px) rotate(12deg) scale(1.1); }
+  100% { transform: translateY(0) rotate(0) scale(1); }
+}
+
+.bunny.munch {
+  animation: bunny-munch 0.65s ease-in-out 3;
+}
+
+@keyframes bunny-munch {
+  0%, 100% { transform: scale(1) rotate(0); }
+  25% { transform: scale(1.12, 0.88) rotate(-5deg); }
+  50% { transform: scale(0.95, 1.08) rotate(5deg); }
+  75% { transform: scale(1.1, 0.9) rotate(-3deg); }
+}
+
+.carrot-patch {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 40px;
+  margin: 10px auto;
+}
+
+.carrot {
+  display: inline-block;
+  font-size: 29px;
+  transform-origin: center;
+}
+
+.carrot.collect {
+  animation: carrot-fly 0.75s ease-in forwards;
+}
+
+@keyframes carrot-fly {
+  0% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+  55% { opacity: 1; transform: translateY(-65px) rotate(160deg) scale(1.3); }
+  100% { opacity: 0; transform: translateY(-100px) rotate(300deg) scale(0.3); }
+}
+
+.carrot.eaten {
+  animation: carrot-munch 0.8s ease-in forwards;
+}
+
+@keyframes carrot-munch {
+  0% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  45% { opacity: 1; transform: translateY(-28px) scale(0.8) rotate(-20deg); }
+  100% { opacity: 0; transform: translateY(-48px) scale(0.05) rotate(25deg); }
+}
+
+#story {
+  min-height: 28px;
+  margin: 8px 0 0;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.sparkles {
+  position: relative;
+  height: 0;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  top: -110px;
+  left: 50%;
+  font-size: 24px;
+  animation: sparkle-burst 0.9s ease-out forwards;
+}
+
+@keyframes sparkle-burst {
+  0% { opacity: 0; transform: translate(0, 20px) scale(0.2); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.3) rotate(40deg); }
+}
+
+.question {
+  background: #fff8e7;
+  text-align: center;
+}
+
+#question-label {
+  margin: 0 0 10px;
+  color: #77705d;
+  font-weight: bold;
+}
+
+#problem {
+  margin: 8px 0 18px;
+  color: #285b38;
+  font-size: clamp(32px, 7vw, 44px);
+}
+
+.hint-button {
+  padding: 10px 14px;
+  border: 2px solid #e7c35e;
+  border-radius: 13px;
+  color: #5e4b12;
+  background: #fff0b6;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.hint-area {
+  margin: 15px 0;
+  padding: 15px;
+  border: 2px dashed #e1c36d;
+  border-radius: 16px;
+  background: #fffdf4;
+}
+
+.hint-area[hidden],
+#question-panel[hidden],
+#completion-panel[hidden],
+#next[hidden] {
+  display: none !important;
+}
+
+#hint-instructions {
+  margin: 0 0 12px;
+  font-weight: bold;
+}
+
+.hint-visual {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.carrot-group {
+  min-width: 80px;
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid #c8dfb6;
+  border-radius: 12px;
+  background: #f2fae9;
+}
+
+.group-label {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.group-carrots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 180px;
+}
+
+.group-carrots .carrot {
+  font-size: 23px;
+}
+
+.carrot.crossed {
+  opacity: 0.45;
+  text-decoration: line-through;
+  filter: grayscale(1);
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.answers button {
+  padding: 15px;
+  border: 2px solid #a8d5a0;
+  border-radius: 15px;
+  color: #285b38;
+  background: white;
+  font-size: 23px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.answers button:not(:disabled):hover {
+  transform: scale(1.03);
+  background: #e8f8df;
+}
+
+.answers button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.feedback {
+  min-height: 28px;
+  margin: 16px 0;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.primary-button {
+  padding: 13px 22px;
+  border: none;
+  border-radius: 15px;
+  color: white;
+  background: #25894b;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: #196c39;
+}
+
+.completion-panel {
+  padding: 28px 18px;
+  background: #fff2bd;
+  text-align: center;
+}
+
+.completion-icon {
+  font-size: 65px;
+  animation: reward-bounce 1s ease-in-out infinite;
+}
+
+@keyframes reward-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.completion-panel p {
+  line-height: 1.6;
+}
+
+.completion-reward {
+  margin: 14px 0 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.badges-panel {
+  background: #f0edff;
+}
+
+.badges {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.badge-card {
+  padding: 12px 5px;
+  border: 2px solid #d4c9f5;
+  border-radius: 14px;
+  background: white;
+  text-align: center;
+}
+
+.badge-card.earned {
+  border-color: #e4b53b;
+  background: #fff5c8;
+}
+
+.badge-card.locked {
+  filter: grayscale(1);
+  opacity: 0.65;
+}
+
+.badge-icon {
+  font-size: 30px;
+}
+
+.badge-name {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.badge-status {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #68746a;
+}
+
+footer {
+  padding-top: 8px;
+  color: #68746a;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 10px 6px;
+  }
+
+  .game {
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .world-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .map-panel,
+  .progress-panel,
+  .question,
+  .completion-panel,
+  .badges-panel {
+    padding: 13px;
+  }
+
+  .bunny {
+    font-size: 65px;
+  }
+
+  .answers {
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bunny,
+  .bunny.hop,
+  .bunny.munch,
+  .carrot.collect,
+  .carrot.eaten,
+  .sparkle,
+  .completion-icon {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="game">
+  <header class="game-header">
+    <div>
+      <h1>🥕 Math Adventure World</h1>
+      <p class="subtitle">Learn, play, and explore with Bunny!</p>
+    </div>
+    <div class="star-counter">⭐ <span id="stars">0</span></div>
+  </header>
+
+  <section class="map-panel">
+    <h2>🗺️ Choose Your Adventure</h2>
+    <p>Complete a world to unlock the next one!</p>
+
+    <div class="world-map" id="world-map">
+      <button class="world-card active" data-world="0">
+        <span class="world-icon">🌳</span>
+        <strong>Forest</strong>
+        <small>Addition</small>
+        <span class="world-status">▶ Play</span>
+      </button>
+
+      <button class="world-card locked" data-world="1" disabled>
+        <span class="world-icon">🌊</span>
+        <strong>Ocean</strong>
+        <small>Subtraction</small>
+        <span class="world-status">🔒 Locked</span>
+      </button>
+
+      <button class="world-card locked" data-world="2" disabled>
+        <span class="world-icon">🚀</span>
+        <strong>Space</strong>
+        <small>Multiplication</small>
+        <span class="world-status">🔒 Locked</span>
+      </button>
+
+      <button class="world-card locked" data-world="3" disabled>
+        <span class="world-icon">🏰</span>
+        <strong>Castle</strong>
+        <small>Division</small>
+        <span class="world-status">🔒 Locked</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="progress-panel">
+    <div class="progress-label">
+      <span id="progress-title">🌳 Forest progress</span>
+      <strong id="progress-text">0 / 5</strong>
+    </div>
+    <div
+      class="progress-track"
+      id="progress-track"
+      role="progressbar"
+      aria-label="World progress"
+      aria-valuemin="0"
+      aria-valuemax="5"
+      aria-valuenow="0"
+    >
+      <div id="progress-fill" class="progress-fill"></div>
+    </div>
+  </section>
+
+  <section class="meadow">
+    <div class="bunny-scene">
+      <div id="bunny" class="bunny" role="img" aria-label="Bunny">🐰</div>
+      <div class="carrot-patch" id="carrot-patch">
+        <span class="carrot">🥕</span>
+        <span class="carrot">🥕</span>
+        <span class="carrot">🥕</span>
+      </div>
+      <div id="sparkles" class="sparkles"></div>
+    </div>
+    <p id="story">Bunny is ready for an adventure!</p>
+  </section>
+
+  <section id="question-panel" class="question">
+    <p id="question-label">Forest challenge</p>
+    <h2 id="problem">7 + 5 = ?</h2>
+
+    <button id="hint-button" class="hint-button" type="button">
+      💡 Show me a counting hint
+    </button>
+
+    <div id="hint-area" class="hint-area" hidden>
+      <p id="hint-instructions"></p>
+      <div id="hint-visual" class="hint-visual"></div>
+    </div>
+
+    <div id="answers" class="answers"></div>
+    <p id="feedback" class="feedback" aria-live="polite">
+      Choose your answer!
+    </p>
+
+    <button id="next" class="primary-button" hidden>
+      Next challenge ➜
+    </button>
+  </section>
+
+  <section id="completion-panel" class="completion-panel" hidden>
+    <div id="completion-icon" class="completion-icon">🏆</div>
+    <h2 id="completion-title">Wonderful work!</h2>
+    <p id="completion-message"></p>
+    <div id="completion-reward" class="completion-reward"></div>
+    <button id="continue-world" class="primary-button">
+      Explore the next world ➜
+    </button>
+  </section>
+
+  <section class="badges-panel">
+    <h2>🏅 My Achievement Badges</h2>
+    <p>Keep learning to collect them all!</p>
+    <div id="badges" class="badges"></div>
+  </section>
+
+  <footer>
+    <p>🌟 Every mistake is a chance to learn. Keep going! 🌟</p>
+  </footer>
+</div>
+
+  <script>
+   const worlds = [
+  {
+    name: "Forest",
+    icon: "🌳",
+    skill: "Addition",
+    questions: [
+      { a: 7, b: 5, type: "add", symbol: "+", answer: 12 },
+      { a: 4, b: 3, type: "add", symbol: "+", answer: 7 },
+      { a: 8, b: 6, type: "add", symbol: "+", answer: 14 },
+      { a: 9, b: 5, type: "add", symbol: "+", answer: 14 },
+      { a: 6, b: 6, type: "add", symbol: "+", answer: 12 }
+    ]
+  },
+  {
+    name: "Ocean",
+    icon: "🌊",
+    skill: "Subtraction",
+    questions: [
+      { a: 9, b: 4, type: "subtract", symbol: "−", answer: 5 },
+      { a: 12, b: 5, type: "subtract", symbol: "−", answer: 7 },
+      { a: 10, b: 3, type: "subtract", symbol: "−", answer: 7 },
+      { a: 8, b: 6, type: "subtract", symbol: "−", answer: 2 },
+      { a: 15, b: 7, type: "subtract", symbol: "−", answer: 8 }
+    ]
+  },
+  {
+    name: "Space",
+    icon: "🚀",
+    skill: "Multiplication",
+    questions: [
+      { a: 2, b: 3, type: "multiply", symbol: "×", answer: 6 },
+      { a: 3, b: 4, type: "multiply", symbol: "×", answer: 12 },
+      { a: 4, b: 2, type: "multiply", symbol: "×", answer: 8 },
+      { a: 5, b: 3, type: "multiply", symbol: "×", answer: 15 },
+      { a: 4, b: 4, type: "multiply", symbol: "×", answer: 16 }
+    ]
+  },
+  {
+    name: "Castle",
+    icon: "🏰",
+    skill: "Division",
+    questions: [
+      { a: 12, b: 3, type: "divide", symbol: "÷", answer: 4 },
+      { a: 16, b: 4, type: "divide", symbol: "÷", answer: 4 },
+      { a: 15, b: 3, type: "divide", symbol: "÷", answer: 5 },
+      { a: 18, b: 6, type: "divide", symbol: "÷", answer: 3 },
+      { a: 20, b: 5, type: "divide", symbol: "÷", answer: 4 }
+    ]
+  }
+];
+
+let currentWorld = 0;
+let currentQuestionIndex = 0;
+let stars = 0;
+let answered = false;
+
+const unlockedWorlds = new Set([0]);
+const completedWorlds = new Set();
+
+const $ = id => document.getElementById(id);
+
+// ---------- SOUND EFFECTS ----------
+
+let audioContext;
+
+function getAudio() {
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) return null;
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  return audioContext;
+}
+
+function playTone(frequency, delay, duration, type = "sine") {
+  const audio = getAudio();
+  if (!audio) return;
+
+  const start = audio.currentTime + delay;
+  const oscillator = audio.createOscillator();
+  const volume = audio.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, start);
+
+  volume.gain.setValueAtTime(0.0001, start);
+  volume.gain.exponentialRampToValueAtTime(0.12, start + 0.02);
+  volume.gain.exponentialRampToValueAtTime(
+    0.0001,
+    start + duration
+  );
+
+  oscillator.connect(volume);
+  volume.connect(audio.destination);
+
+  oscillator.start(start);
+  oscillator.stop(start + duration + 0.02);
+}
+
+function playCorrectSound() {
+  playTone(523, 0, 0.18);
+  playTone(659, 0.13, 0.18);
+  playTone(784, 0.26, 0.35);
+}
+
+function playMunchSound() {
+  playTone(190, 0, 0.10, "triangle");
+  playTone(125, 0.13, 0.12, "triangle");
+}
+
+function playPopSound() {
+  playTone(700, 0, 0.08);
+}
+
+function playTryAgainSound() {
+  playTone(330, 0, 0.15);
+  playTone(392, 0.18, 0.18);
+}
+
+function playLevelSound() {
+  playTone(523, 0, 0.12);
+  playTone(659, 0.12, 0.12);
+  playTone(880, 0.24, 0.25);
+}
+
+// ---------- WORLD MAP ----------
+
+function renderWorldMap() {
+  document.querySelectorAll(".world-card").forEach(button => {
+    const index = Number(button.dataset.world);
+    const world = worlds[index];
+    const status = button.querySelector(".world-status");
+
+    button.classList.toggle("active", index === currentWorld);
+    button.classList.toggle(
+      "completed",
+      completedWorlds.has(index)
+    );
+    button.classList.toggle(
+      "locked",
+      !unlockedWorlds.has(index)
+    );
+
+    button.disabled =
+      !unlockedWorlds.has(index) ||
+      completedWorlds.has(index);
+
+    if (completedWorlds.has(index)) {
+      status.textContent = "✓ Complete";
+    } else if (!unlockedWorlds.has(index)) {
+      status.textContent = "🔒 Locked";
+    } else if (index === currentWorld) {
+      status.textContent = "▶ Playing";
+    } else {
+      status.textContent = "▶ Play";
+    }
+
+    button.setAttribute(
+      "aria-label",
+      `${world.name}: ${world.skill}` +
+      (completedWorlds.has(index)
+        ? ", completed"
+        : !unlockedWorlds.has(index)
+          ? ", locked"
+          : "")
+    );
+  });
+}
+
+$("world-map").addEventListener("click", event => {
+  const button = event.target.closest(".world-card");
+
+  if (!button || button.disabled) return;
+
+  const index = Number(button.dataset.world);
+
+  if (!unlockedWorlds.has(index)) return;
+  if (completedWorlds.has(index)) return;
+
+  currentWorld = index;
+  currentQuestionIndex = 0;
+
+  $("completion-panel").hidden = true;
+  $("question-panel").hidden = false;
+
+  playLevelSound();
+  showQuestion();
+});
+
+// ---------- PROGRESS BAR ----------
+
+function updateProgress() {
+  const world = worlds[currentWorld];
+
+  const total = world.questions.length;
+  const done = currentQuestionIndex + (answered ? 1 : 0);
+  const percent = (done / total) * 100;
+
+  $("progress-title").textContent =
+    `${world.icon} ${world.name} progress`;
+
+  $("progress-text").textContent = `${done} / ${total}`;
+  $("progress-fill").style.width = `${percent}%`;
+
+  $("progress-track").setAttribute("aria-valuenow", done);
+}
+
+// ---------- ACHIEVEMENT BADGES ----------
+
+const achievements = [
+  {
+    name: "Star Starter",
+    icon: "⭐",
+    description: "Earn 5 stars",
+    earned: () => stars >= 5
+  },
+  {
+    name: "Carrot Collector",
+    icon: "🥕",
+    description: "Earn 10 stars",
+    earned: () => stars >= 10
+  },
+  {
+    name: "Math Champion",
+    icon: "🏆",
+    description: "Earn 20 stars",
+    earned: () => stars >= 20
+  },
+  {
+    name: "World Explorer",
+    icon: "🗺️",
+    description: "Complete all worlds",
+    earned: () => completedWorlds.size === worlds.length
+  }
+];
+
+function renderBadges() {
+  const container = $("badges");
+  container.replaceChildren();
+
+  achievements.forEach(achievement => {
+    const earned = achievement.earned();
+
+    const card = document.createElement("div");
+    card.className = `badge-card ${earned ? "earned" : "locked"}`;
+
+    const icon = document.createElement("div");
+    icon.className = "badge-icon";
+    icon.textContent = earned ? achievement.icon : "🔒";
+
+    const name = document.createElement("div");
+    name.className = "badge-name";
+    name.textContent = achievement.name;
+
+    const status = document.createElement("div");
+    status.className = "badge-status";
+    status.textContent = earned ? "Unlocked!" : achievement.description;
+
+    card.append(icon, name, status);
+    container.appendChild(card);
+  });
+}
+
+// ---------- COUNTING HINTS ----------
+
+function createCarrotGroup(label, count, crossed = 0) {
+  const group = document.createElement("div");
+  group.className = "carrot-group";
+
+  const title = document.createElement("div");
+  title.className = "group-label";
+  title.textContent = label;
+
+  const carrots = document.createElement("div");
+  carrots.className = "group-carrots";
+
+  for (let i = 0; i < count; i++) {
+    const carrot = document.createElement("span");
+    carrot.className = "carrot";
+    carrot.textContent = "🥕";
+
+    if (i >= count - crossed && crossed > 0) {
+      carrot.classList.add("crossed");
+      carrot.setAttribute("aria-label", "Carrot to take away");
+    }
+
+    carrots.appendChild(carrot);
+  }
+
+  group.append(title, carrots);
+  return group;
+}
+
+function buildHint(q) {
+  const visual = $("hint-visual");
+  visual.replaceChildren();
+
+  if (q.type === "add") {
+    $("hint-instructions").textContent =
+      "Count the first group, then count the second group. How many carrots are there altogether?";
+
+    visual.append(
+      createCarrotGroup(`First group: ${q.a}`, q.a),
+      createCarrotGroup(`Add ${q.b} more`, q.b)
+    );
+
+  } else if (q.type === "subtract") {
+    $("hint-instructions").textContent =
+      `Start with ${q.a} carrots. Cross out ${q.b} carrots. Count how many are left.`;
+
+    visual.append(
+      createCarrotGroup(
+        `${q.a} carrots: cross out ${q.b}`,
+        q.a,
+        q.b
+      )
+    );
+
+  } else if (q.type === "multiply") {
+    $("hint-instructions").textContent =
+      `Make ${q.a} equal groups with ${q.b} carrots in each group. Count all the carrots.`;
+
+    for (let i = 0; i < q.a; i++) {
+      visual.appendChild(
+        createCarrotGroup(`Group ${i + 1}`, q.b)
+      );
+    }
+
+  } else if (q.type === "divide") {
+    $("hint-instructions").textContent =
+      `Share ${q.a} carrots equally between ${q.b} groups. How many go in each group?`;
+
+    const base = Math.floor(q.a / q.b);
+    const remainder = q.a % q.b;
+
+    for (let i = 0; i < q.b; i++) {
+      const count = base + (i < remainder ? 1 : 0);
+
+      visual.appendChild(
+        createCarrotGroup(`Group ${i + 1}`, count)
+      );
+    }
+  }
+}
+
+$("hint-button").addEventListener("click", () => {
+  const hint = $("hint-area");
+  hint.hidden = !hint.hidden;
+
+  $("hint-button").textContent = hint.hidden
+    ? "💡 Show me a counting hint"
+    : "🙈 Hide counting hint";
+});
+
+// ---------- SHOW A QUESTION ----------
+
+function showQuestion() {
+  answered = false;
+
+  const world = worlds[currentWorld];
+  const q = world.questions[currentQuestionIndex];
+
+  // Reset Bunny and the scene.
+  $("bunny").classList.remove("hop", "munch");
+  $("sparkles").replaceChildren();
+
+  const patch = $("carrot-patch");
+  patch.replaceChildren();
+
+  for (let i = 0; i < 3; i++) {
+    const carrot = document.createElement("span");
+    carrot.className = "carrot";
+    carrot.textContent = "🥕";
+    patch.appendChild(carrot);
+  }
+
+  // Set the question and instructions.
+  $("question-label").textContent =
+    `${world.icon} ${world.name}: ${world.skill}`;
+
+  $("problem").textContent =
+    `${q.a} ${q.symbol} ${q.b} = ?`;
+
+  $("feedback").textContent = "Choose your answer!";
+  $("story").textContent =
+    `${world.name} adventure! Help Bunny solve the puzzle.`;
+
+  $("hint-area").hidden = true;
+  $("hint-button").textContent = "💡 Show me a counting hint";
+
+  buildHint(q);
+
+  // Build the answer buttons.
+  const answers = $("answers");
+  answers.replaceChildren();
+
+  const choices = [
+    q.answer,
+    q.answer + 2,
+    Math.max(0, q.answer - 1),
+    q.answer + 4
+  ];
+
+  // Shuffle choices.
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+
+  choices.forEach(number => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = number;
+
+    button.addEventListener("click", () => {
+      if (answered) return;
+
+      if (number === q.answer) {
+        // Award a star only once for each question.
+        answered = true;
+        stars++;
+
+        $("stars").textContent = stars;
+        $("feedback").textContent =
+          "🎉 Correct! You earned a star!";
+
+        $("story").textContent =
+          "Amazing maths work! Bunny is so happy!";
+
+        // Prevent repeated answers after a correct answer.
+        answers.querySelectorAll("button").forEach(choice => {
+          choice.disabled = true;
+        });
+
+        $("next").textContent =
+          currentQuestionIndex === world.questions.length - 1
+            ? "Finish world 🏆"
+            : "Next challenge ➜";
+
+        $("next").hidden = true;
+
+        updateProgress();
+        renderBadges();
+
+        playCorrectSound();
+        celebrateBunny();
+
+        // Let Bunny finish the celebration before continuing.
+        setTimeout(() => {
+          $("next").hidden = false;
+        }, 2600);
+
+      } else {
+        // Give children another chance to answer.
+        playTryAgainSound();
+
+        $("feedback").textContent =
+          "Not quite! Try again, or use the counting hint. 💚";
+
+        $("story").textContent =
+          "You can do it! Let's count together.";
+      }
+    });
+
+    answers.appendChild(button);
+  });
+
+  $("next").hidden = true;
+  updateProgress();
+  renderWorldMap();
+}
+
+// ---------- BUNNY HOPS, MUNCHES, AND CELEBRATES ----------
+
+function celebrateBunny() {
+  const bunny = $("bunny");
+  const carrots = document.querySelectorAll(
+    "#carrot-patch .carrot"
+  );
+  const sparkles = $("sparkles");
+
+  // Bunny hops!
+  bunny.classList.remove("hop", "munch");
+  void bunny.offsetWidth;
+  bunny.classList.add("hop");
+
+  bunny.addEventListener("animationend", function resetHop(event) {
+    if (event.animationName !== "bunny-hop") return;
+
+    bunny.classList.remove("hop");
+    bunny.removeEventListener("animationend", resetHop);
+  });
+
+  // After the hop, Bunny eats a carrot.
+  setTimeout(() => {
+    bunny.classList.remove("hop");
+    bunny.classList.add("munch");
+
+    $("story").textContent = "Yummy! Munch, munch! 🐰🥕";
+
+    playMunchSound();
+    setTimeout(playMunchSound, 350);
+
+    const carrot = carrots[0];
+
+    if (carrot) {
+      carrot.classList.add("eaten");
+      playPopSound();
+
+      carrot.addEventListener("animationend", function removeCarrot(event) {
+        if (event.animationName !== "carrot-munch") return;
+
+        carrot.remove();
+        carrot.removeEventListener("animationend", removeCarrot);
+      });
+    }
+
+    // Finish the celebration with sparkles.
+    setTimeout(() => {
+      bunny.classList.remove("munch");
+
+      $("story").textContent =
+        "Delicious! Great maths work! ⭐";
+
+      sparkles.replaceChildren();
+
+      const symbols = ["✨", "⭐", "🌟", "💛", "✨", "⭐"];
+
+      symbols.forEach((symbol, index) => {
+        const sparkle = document.createElement("span");
+
+        sparkle.className = "sparkle";
+        sparkle.textContent = symbol;
+
+        sparkle.style.setProperty(
+          "--dx",
+          `${(index - 2.5) * 42}px`
+        );
+
+        sparkle.style.setProperty(
+          "--dy",
+          `${-45 - (index % 3) * 20}px`
+        );
+
+        sparkle.style.animationDelay = `${index * 0.08}s`;
+
+        sparkles.appendChild(sparkle);
+      });
+    }, 1900);
+  }, 650);
+}
+
+// ---------- COMPLETE A WORLD ----------
+
+function finishWorld() {
+  const world = worlds[currentWorld];
+
+  completedWorlds.add(currentWorld);
+
+  const nextWorldIndex = currentWorld + 1;
+  const allComplete = completedWorlds.size === worlds.length;
+
+  if (nextWorldIndex < worlds.length) {
+    unlockedWorlds.add(nextWorldIndex);
+  }
+
+  $("question-panel").hidden = true;
+  $("completion-panel").hidden = false;
+
+  if (allComplete) {
+    $("completion-icon").textContent = "🏆";
+    $("completion-title").textContent = "You did it, Math Champion!";
+
+    $("completion-message").textContent =
+      "You completed Forest, Ocean, Space, and Castle! " +
+      "Bunny is proud of your amazing maths skills.";
+
+    $("completion-reward").textContent =
+      `🌟 ${stars} stars collected! All four worlds completed!`;
+
+    $("continue-world").textContent = "Play again ↻";
+
+  } else {
+    const nextWorld = worlds[nextWorldIndex];
+
+    $("completion-icon").textContent = "🎉";
+    $("completion-title").textContent =
+      `${world.name} World Complete!`;
+
+    $("completion-message").textContent =
+      `Wonderful work! You completed ${world.skill.toLowerCase()} ` +
+      `challenges and unlocked ${nextWorld.name} World!`;
+
+    $("completion-reward").textContent =
+      `${world.icon} World completed  •  ⭐ ${stars} total stars`;
+
+    $("continue-world").textContent =
+      `Explore ${nextWorld.name} ➜`;
+  }
+
+  renderWorldMap();
+  renderBadges();
+  playLevelSound();
+}
+
+// ---------- NEXT QUESTION OR NEXT WORLD ----------
+
+$("next").addEventListener("click", () => {
+  if (!answered) return;
+
+  const world = worlds[currentWorld];
+
+  if (currentQuestionIndex < world.questions.length - 1) {
+    currentQuestionIndex++;
+    showQuestion();
+  } else {
+    finishWorld();
+  }
+});
+
+$("continue-world").addEventListener("click", () => {
+  if (completedWorlds.size === worlds.length) {
+    // Start a fresh adventure.
+    currentWorld = 0;
+    currentQuestionIndex = 0;
+    stars = 0;
+
+    unlockedWorlds.clear();
+    unlockedWorlds.add(0);
+    completedWorlds.clear();
+
+    $("stars").textContent = stars;
+  } else {
+    currentWorld++;
+    currentQuestionIndex = 0;
+  }
+
+  $("completion-panel").hidden = true;
+  $("question-panel").hidden = false;
+
+  playLevelSound();
+  showQuestion();
+});
+
+// ---------- START THE GAME ----------
+
+$("stars").textContent = stars;
+
+renderWorldMap();
+renderBadges();
+showQuestion();
+
+</body>
+</html>
